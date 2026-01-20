@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Movimientos</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body { padding: 40px 20px; background-color: #f4f7f6; }
+        .container { max-width: 400px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .monto-pos { color: green; font-weight: bold; }
+        .monto-neg { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 class="text-center mb-4">Últimos Movimientos</h2>
+
+    <div class="form-group">
+        <label>Filtrar por tipo:</label>
+        <select id="filtroTipo" class="form-control">
+            <option value="todos">Todos</option>
+            <option value="Depósito">Depósitos</option>
+            <option value="Transferencia Enviada">Transferencias Enviadas</option>
+        </select>
+    </div>
+    
+    <ul class="list-group mb-4" id="listaTransacciones">
+        </ul>
+
+    <a href="menu.html" class="btn btn-primary btn-block">Volver al Menú</a>
+</div>
+
+<script>
+    $(document).ready(function() {
+        
+        // Obtener historial real del LocalStorage
+        var historialReal = JSON.parse(localStorage.getItem('walletMovimientos')) || [];
+
+        // Función auxiliar para obtener texto legible (Consigna)
+        function getTipoTransaccion(tipo) {
+            return tipo; // En nuestro caso ya guardamos el texto legible, pero la función existe.
+        }
+
+        // Función principal para renderizar
+        function mostrarUltimosMovimientos(filtro) {
+            $('#listaTransacciones').empty(); // Limpiar lista
+
+            // Si no hay datos
+            if (historialReal.length === 0) {
+                $('#listaTransacciones').append('<li class="list-group-item text-center">Sin movimientos</li>');
+                return;
+            }
+
+            // Invertimos para ver los más nuevos primero
+            var movimientosParaMostrar = historialReal.slice().reverse();
+
+            // Filtrar si no es "todos"
+            if (filtro !== 'todos') {
+                movimientosParaMostrar = movimientosParaMostrar.filter(function(mov) {
+                    return mov.tipo === filtro;
+                });
+            }
+
+            if(movimientosParaMostrar.length === 0) {
+                $('#listaTransacciones').append('<li class="list-group-item text-center">No hay coincidencias</li>');
+                return;
+            }
+
+            // Renderizar
+            $.each(movimientosParaMostrar, function(index, mov) {
+                var colorClass = (mov.monto >= 0) ? 'monto-pos' : 'monto-neg';
+                var signo = (mov.monto >= 0) ? '+' : '-';
+                // Usamos Math.abs para mostrar el número sin doble signo negativo
+                var montoVisual = Math.abs(mov.monto); 
+
+                var html = `
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${getTipoTransaccion(mov.tipo)}</strong><br>
+                            <small class="text-muted">${mov.fecha}</small>
+                        </div>
+                        <span class="${colorClass}">${signo}$${montoVisual}</span>
+                    </li>
+                `;
+                $('#listaTransacciones').append(html);
+            });
+        }
+
+        // 1. Cargar inicial (Todos)
+        mostrarUltimosMovimientos('todos');
+
+        // 2. Evento Cambio de Filtro
+        $('#filtroTipo').change(function() {
+            var seleccion = $(this).val();
+            mostrarUltimosMovimientos(seleccion);
+        });
+    });
+</script>
+</body>
+</html>

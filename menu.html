@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Menú - Billetera</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body { padding: 40px 20px; background-color: #f4f7f6; }
+        .container { max-width: 400px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .saldo-box { background-color: #e9ecef; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 25px; }
+        .saldo-numero { color: #28a745; font-size: 2.5rem; font-weight: bold; }
+        .redirect-msg { display: none; font-weight: bold; color: #0056b3; margin-top: 10px; text-align: center;}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 class="text-center mb-4">Menú Principal</h2>
+
+    <div class="saldo-box">
+        <h4>Saldo Actual</h4>
+        <div class="saldo-numero">$<span id="saldoDisplay">0</span></div>
+    </div>
+
+    <div id="status-msg" class="redirect-msg mb-3"></div>
+
+    <button id="btn-deposit" class="btn btn-primary btn-block btn-lg mb-3">Depositar</button>
+    <button id="btn-send" class="btn btn-primary btn-block btn-lg mb-3">Enviar Dinero</button>
+    <button id="btn-transactions" class="btn btn-secondary btn-block btn-lg">Últimos Movimientos</button>
+
+    <div class="text-center mt-4">
+        <a href="login.html" class="text-danger">Cerrar Sesión</a>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        // Cargar Saldo
+        var saldo = localStorage.getItem('walletSaldo') || 0;
+        $('#saldoDisplay').text(parseFloat(saldo).toLocaleString('es-AR'));
+
+        // Función genérica para navegar
+        function navegar(selector, url, nombrePantalla) {
+            $(selector).click(function() {
+                $('#status-msg').text("Redirigiendo a " + nombrePantalla + "...").fadeIn();
+                setTimeout(function() {
+                    window.location.href = url;
+                }, 1000);
+            });
+        }
+
+        // Asignar eventos
+        navegar('#btn-deposit', 'deposit.html', 'Depositar');
+        navegar('#btn-send', 'sendmoney.html', 'Enviar Dinero');
+        navegar('#btn-transactions', 'transactions.html', 'Últimos Movimientos');
+    });
+</script>
+</body>
+</html>

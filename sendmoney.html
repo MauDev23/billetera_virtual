@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Enviar Dinero</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body { padding: 40px 20px; background-color: #f4f7f6; }
+        .container { max-width: 400px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .contact-item { cursor: pointer; }
+        .contact-item:hover { background-color: #f1f1f1; }
+        .selected-contact { background-color: #d4edda !important; border: 1px solid #c3e6cb; }
+        #newContactFormContainer { display: none; background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 15px;}
+        #sendSection { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 class="text-center mb-4">Enviar Dinero</h2>
+
+    <button id="toggleContactForm" class="btn btn-outline-primary btn-block mb-3">+ Agregar nuevo contacto</button>
+
+    <div id="newContactFormContainer">
+        <h6>Nuevo Contacto</h6>
+        <form id="addContactForm">
+            <input type="text" id="newNombre" class="form-control mb-2" placeholder="Nombre y Apellido" required>
+            <input type="number" id="newCBU" class="form-control mb-2" placeholder="CBU (22 dígitos)" required>
+            <input type="text" id="newAlias" class="form-control mb-2" placeholder="Alias" required>
+            <input type="text" id="newBanco" class="form-control mb-2" placeholder="Banco" required>
+            <div id="contact-error" class="text-danger small mb-2"></div>
+            <button type="submit" class="btn btn-success btn-sm">Guardar</button>
+            <button type="button" id="cancelContact" class="btn btn-secondary btn-sm">Cancelar</button>
+        </form>
+    </div>
+
+    <input type="text" id="searchContact" class="form-control mb-3" placeholder="🔍 Buscar por nombre o alias...">
+
+    <ul class="list-group mb-3" id="agendaList">
+        <li class="list-group-item contact-item" data-name="Carlos Perez" data-alias="carlos.mp">Carlos Perez <small class="text-muted">(carlos.mp)</small></li>
+        <li class="list-group-item contact-item" data-name="Ana Garcia" data-alias="ana.banco">Ana Garcia <small class="text-muted">(ana.banco)</small></li>
+        <li class="list-group-item contact-item" data-name="Luisa Lane" data-alias="luisa.alias">Luisa Lane <small class="text-muted">(luisa.alias)</small></li>
+    </ul>
+
+    <div id="sendSection" class="border-top pt-3">
+        <h5 class="text-center">Enviando a: <span id="destinatarioName" class="text-primary"></span></h5>
+        <form id="sendForm">
+            <div class="form-group">
+                <label>Monto:</label>
+                <input type="number" id="montoEnvio" class="form-control" placeholder="$0" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Enviar Dinero</button>
+        </form>
+    </div>
+
+    <div id="finalMessage" class="mt-3"></div>
+    <a href="menu.html" class="btn btn-link btn-block mt-2">Volver</a>
+</div>
+
+<script>
+    $(document).ready(function() {
+        
+        // 1. Mostrar/Ocultar Formulario Contacto
+        $('#toggleContactForm').click(function() {
+            $('#newContactFormContainer').slideDown();
+            $(this).hide();
+        });
+
+        $('#cancelContact').click(function() {
+            $('#newContactFormContainer').slideUp();
+            $('#toggleContactForm').show();
+            $('#contact-error').text('');
+        });
+
+        // 2. Validar y Agregar Contacto
+        $('#addContactForm').submit(function(e) {
+            e.preventDefault();
+            var cbu = $('#newCBU').val();
+            
+            // Validación simple de CBU
+            if(cbu.length < 5) { // Ejemplo simple, CBU real es 22
+                $('#contact-error').text('El CBU es muy corto.');
+                return;
+            }
+
+            var nombre = $('#newNombre').val();
+            var alias = $('#newAlias').val();
+
+            // Agregar a la lista visualmente
+            $('#agendaList').append('<li class="list-group-item contact-item" data-name="'+nombre+'" data-alias="'+alias+'">'+nombre+' <small class="text-muted">('+alias+')</small></li>');
+            
+            // Resetear y cerrar
+            $('#addContactForm')[0].reset();
+            $('#cancelContact').click();
+        });
+
+        // 3. Búsqueda en Agenda
+        $('#searchContact').on('keyup', function() {
+            var value = $(this).val().toLowerCase();
+            $("#agendaList li").filter(function() {
+                // Filtra mostrando solo los que coinciden
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+
+        // 4. Seleccionar Contacto
+        // Usamos 'on' delegado por si agregamos contactos dinámicos
+        $('#agendaList').on('click', '.contact-item', function() {
+            $('.contact-item').removeClass('selected-contact');
+            $(this).addClass('selected-contact');
+            
+            var nombre = $(this).data('name');
+            $('#destinatarioName').text(nombre);
+            $('#sendSection').fadeIn();
+        });
+
+        // 5. Enviar Dinero
+        $('#sendForm').submit(function(e) {
+            e.preventDefault();
+            var monto = parseFloat($('#montoEnvio').val());
+            var saldo = parseFloat(localStorage.getItem('walletSaldo')) || 0;
+
+            if(monto > saldo) {
+                $('#finalMessage').html('<div class="alert alert-danger">Fondos insuficientes</div>');
+            } else {
+                // Actualizar saldo
+                var nuevoSaldo = saldo - monto;
+                localStorage.setItem('walletSaldo', nuevoSaldo);
+
+                // Guardar movimiento
+                var historial = JSON.parse(localStorage.getItem('walletMovimientos')) || [];
+                historial.push({ tipo: "Transferencia Enviada", monto: -monto, fecha: new Date().toLocaleDateString() });
+                localStorage.setItem('walletMovimientos', JSON.stringify(historial));
+
+                $('#finalMessage').html('<div class="alert alert-success">✅ ¡Envío exitoso! Nuevo saldo: $'+nuevoSaldo+'</div>');
+                $('#sendSection').hide();
+                setTimeout(function(){ window.location.href='menu.html'}, 2000);
+            }
+        });
+    });
+</script>
+</body>
+</html>
