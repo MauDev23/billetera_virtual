@@ -26,7 +26,7 @@
         <h6>Nuevo Contacto</h6>
         <form id="addContactForm">
             <input type="text" id="newNombre" class="form-control mb-2" placeholder="Nombre y Apellido" required>
-            <input type="number" id="newCBU" class="form-control mb-2" placeholder="CBU (22 dígitos)" required>
+            <input type="number" id="numeroCuenta" class="form-control mb-2" placeholder="Numero de cuenta" required>
             <input type="text" id="newAlias" class="form-control mb-2" placeholder="Alias" required>
             <input type="text" id="newBanco" class="form-control mb-2" placeholder="Banco" required>
             <div id="contact-error" class="text-danger small mb-2"></div>
@@ -76,11 +76,11 @@
         // 2. Validar y Agregar Contacto
         $('#addContactForm').submit(function(e) {
             e.preventDefault();
-            var cbu = $('#newCBU').val();
+            var cuenta = $('#numeroCuenta').val();
             
-            // Validación simple de CBU
-            if(cbu.length < 5) { // Ejemplo simple, CBU real es 22
-                $('#contact-error').text('El CBU es muy corto.');
+          // Validación simple de Cuenta
+            if(cuenta.length < 5) { 
+                $('#contact-error').text('El número de cuenta es muy corto.');
                 return;
             }
 
@@ -141,4 +141,5 @@
     });
 </script>
 </body>
+
 </html>
