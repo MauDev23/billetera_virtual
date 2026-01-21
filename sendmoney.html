@@ -133,7 +133,7 @@
                 historial.push({ tipo: "Transferencia Enviada", monto: -monto, fecha: new Date().toLocaleDateString() });
                 localStorage.setItem('walletMovimientos', JSON.stringify(historial));
 
-                $('#finalMessage').html('<div class="alert alert-success">✅ ¡Envío exitoso! Nuevo saldo: $'+nuevoSaldo+'</div>');
+                $('#finalMessage').html('<div class="alert alert-success"> ¡Envío exitoso! Nuevo saldo: $'+nuevoSaldo+'</div>');
                 $('#sendSection').hide();
                 setTimeout(function(){ window.location.href='menu.html'}, 2000);
             }
@@ -143,3 +143,4 @@
 </body>
 
 </html>
+
